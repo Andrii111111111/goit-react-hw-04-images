@@ -1,5 +1,5 @@
 
-import { Component } from "react";
+import { useState, useEffect } from "react";
 import { Form } from './Searchbar/Searchbar';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -11,68 +11,66 @@ import { ImageGallery } from "./ImageGallery/ImageGallery";
 
 
 
-export class App extends Component {
+export const App =()=> {
 
-  state = {
-    images: [],
-    page: 1,
-    data: '',
-    buttonVisible: false,
-    loading: false,
-  }
-  
-  componentDidUpdate(_, prevState) {
-    if (
-      prevState.data !== this.state.data ||
-      this.state.page !== prevState.page
-    ) {
-      this.getImages();
-    }
-  }
+  const [images, setImages] = useState([])
+  const [page, setPage] = useState(1)
+  const [data, setData] = useState('')
+  const [buttonVisible, setButtonVisible] = useState(false)
+  const [loading, setLoading] = useState(false)
+ 
 
-
-  getImages = async () => {
-    const { page, data } = this.state
-    
-     try {
-      this.setState({ loading:true })
-      const images = await GetInfo.getImages(data,page);
+  useEffect(() => {
+   setLoading(true);
+    try {
+      const getImage = async () => {
+        
+         const images = await GetInfo.getImages(data, page);
        
-      this.setState(prevState => ({
-        images: [...prevState.images, ...images.hits],
-        buttonVisible: page < Math.ceil(images.totalHits / 12),}));
-       
-    if ((page === 1) & (images.totalHits === 0)) {
-      toast.error(
-        `Sorry, there are no images matching your search ${data}. Please try again.`
-      );
-    }
-    } catch (error) {
+         setImages((prevImages) =>
+           [...prevImages, ...images.hits],
+           setButtonVisible(page < Math.ceil(images.totalHits / 12)));
+        
+         if ((page === 1) & (images.totalHits === 0)) {
+           toast.error(
+             `Sorry, there are no images matching your search ${data}. Please try again.`
+           );
+         }
+       };
+       if (data.length !== 0) {
+         getImage()
+       }
+        }
+     catch (error) {
       console.log('Error');
     }
-    finally { this.setState({ loading: false })}
-  };
-
-  getData = data => {
-    this.setState({
-    images: [], page:1, data:data });
+     finally { setLoading(false) }
+    
+  }, [data, page]);
+  
+  
+  
+  const getData = data => {
+    setImages([])
+    setPage(1)
+    setData(data)
   }
  
-  buttonClick = () => {
-    this.setState(prevState => ({ page: prevState.page + 1 }));
-};
+   const  buttonClick = () => {
+    setPage((prevPage) => prevPage + 1 );
+  };
   
-  render() {
   
   return (
     <>
-      <Form onSubmit={this.getData} />
+      <Form onSubmit={getData} />
       <ToastContainer />
-         {this.state.loading && <Loading><Audio/></Loading> }
-      <ImageGallery images={ this.state.images } />
-         {this.state.buttonVisible && (
-      <But type="button" onClick={this.buttonClick}>Load more</But>
+      {loading && (<Loading><Audio/></Loading>)}
+        <ImageGallery images={images} />
+          {buttonVisible && (
+      <But type="button" onClick={buttonClick}>Load more</But>
       )}
     </>)
 }
-}
+
+
