@@ -18,18 +18,21 @@ export const App =()=> {
   const [data, setData] = useState('')
   const [buttonVisible, setButtonVisible] = useState(false)
   const [loading, setLoading] = useState(false)
- 
+
 
   useEffect(() => {
-   setLoading(true);
+    setLoading(true)
+   
     try {
+      
       const getImage = async () => {
         
-         const images = await GetInfo.getImages(data, page);
+        const images = await GetInfo.getImages(data, page);
+          
+        setButtonVisible(page < Math.ceil(images.totalHits / 12))
        
-         setImages((prevImages) =>
-           [...prevImages, ...images.hits],
-           setButtonVisible(page < Math.ceil(images.totalHits / 12)));
+        setImages((prevImages) =>
+           [...prevImages, ...images.hits]);
         
          if ((page === 1) & (images.totalHits === 0)) {
            toast.error(
@@ -37,7 +40,7 @@ export const App =()=> {
            );
          }
        };
-       if (data.length !== 0) {
+      if (data.length !== 0) {
          getImage()
        }
         }
